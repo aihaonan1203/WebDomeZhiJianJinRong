@@ -9,8 +9,8 @@ public class Constant {
 //    public static final String BASE = "http://44733e5f.ngrok.io/";
 //    public static final String BASE = "http://mst.vipgz1.idcfengye.com/chengLoan/dist/index.html#/";
 //    public static final String BASE = "http://101.132.125.248:6040/chengLoan/dist/index.html";
-    public static final String BASE = "http://39.98.70.149:8080/Wallet/fenbei/login.html";
-    public static final String BASE_JAVA= "http://172.16.1.214:8080/";
+    public static final String BASE = "http://47.97.163.4:6050/fingertip/dist/zhijianjinrong/dengLu.html";
+    public static final String BASE_JAVA= "http://47.97.163.4:6050/";
 
 
     public static final String UPLOADIMG= BASE_JAVA+"fingertip/common/picUpload";//上传图片

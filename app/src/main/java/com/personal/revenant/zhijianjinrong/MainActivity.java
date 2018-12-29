@@ -907,13 +907,7 @@ public class MainActivity extends Activity implements JsApi.JsCallback, UMShareL
         if (params==null){
             return;
         }
-        String phoneNum = null;
-        try {
-            JSONObject jsonObject=new JSONObject(params.toString());
-            phoneNum=jsonObject.getString("phone");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        String phoneNum = params.toString();
         Intent intent = new Intent(Intent.ACTION_DIAL);
         Uri data = Uri.parse("tel:" + phoneNum);
         intent.setData(data);
@@ -982,10 +976,66 @@ public class MainActivity extends Activity implements JsApi.JsCallback, UMShareL
         if (params==null){
             return;
         }
-        type="1";
+        try {
+            JSONObject j=new JSONObject(params.toString());
+            type=j.getString("type");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        if ("1".equals(type)){
+            initPictandVideoone();
+        }else if ("2".equals(type)){
+            PictureSelector.create(MainActivity.this)
+                    .openGallery(PictureMimeType.ofImage())
+                    .isCamera(true)
+                    .forResult(PictureConfig.CHOOSE_REQUEST);
+        }else {
+            PictureSelector.create(MainActivity.this)
+                    .openGallery(PictureMimeType.ofImage())
+                    .imageSpanCount(3)
+                    .maxSelectNum(1)
+                    .selectionMode(PictureConfig.SINGLE)
+                    .previewImage(true)
+                    .previewVideo(false)
+                    .enableCrop(true)
+                    .freeStyleCropEnabled(false)
+                    .circleDimmedLayer(false)
+                    .showCropFrame(true)// 是否显示裁剪矩形边框 圆形裁剪时建议设为false   true or false
+                    .isCamera(true)
+                    .isZoomAnim(true)
+                    .showCropFrame(true)// 是否显示裁剪矩形边框 圆形裁剪时建议设为false   true or false
+                    .showCropGrid(false)
+                    .cropWH(600, 600)
+                    .withAspectRatio(1, 1)
+                    .selectionMedia(selectList)
+                    .minimumCompressSize(100)
+                    .isDragFrame(true)
+                    .forResult(PictureConfig.CHOOSE_REQUEST);
+        }
+
+    }
+
+    private void initPictandVideoone() {
         PictureSelector.create(MainActivity.this)
                 .openGallery(PictureMimeType.ofImage())
+                .imageSpanCount(3)
+                .maxSelectNum(1)
+                .selectionMode(PictureConfig.SINGLE)
+                .previewImage(true)
+                .previewVideo(false)
+                .enableCrop(true)
+                .freeStyleCropEnabled(false)
+                .circleDimmedLayer(true)
+                .showCropFrame(false)// 是否显示裁剪矩形边框 圆形裁剪时建议设为false   true or false
                 .isCamera(true)
+                .isZoomAnim(true)
+                .showCropFrame(false)// 是否显示裁剪矩形边框 圆形裁剪时建议设为false   true or false
+                .showCropGrid(false)
+                .cropWH(500, 500)
+                .withAspectRatio(1, 1)
+                .selectionMedia(selectList)
+                .minimumCompressSize(100)
+                .isDragFrame(true)
                 .forResult(PictureConfig.CHOOSE_REQUEST);
     }
 
@@ -1097,24 +1147,16 @@ public class MainActivity extends Activity implements JsApi.JsCallback, UMShareL
                     // 图片、视频、音频选择结果回调
                     selectList = PictureSelector.obtainMultipleResult(data);
                     LogUtils.d("选择图片是" + selectList.get(0).getPath());
-                    // 例如 LocalMedia 里面返回三种path
-                    // 1.media.getPath(); 为原图path
-                    // 2.media.getCutPath();为裁剪后path，需判断media.isCut();是否为true  注意：音视频除外
-                    // 3.media.getCompressPath();为压缩后path，需判断media.isCompressed();是否为true  注意：音视频除外
                     // 如果裁剪并压缩了，以取压缩路径为准，因为是先裁剪后压缩的
                     if (selectList.size() > 0) {
-                        uploadAvatar(selectList.get(0).getPath());
-//                        for (LocalMedia media : selectList) {
-//                            Log.i("图片-----》", media.getPath());
-//                            LogUtils.d("裁剪的数据是" + media.getCutPath());
-//                            LogUtils.d("未裁剪的数据是" + media.getPath());
-//                            if ("1".equals(upload)) {
-//
-//                            } else if ("2".equals(upload)) {
-//                                sendimage(media.getPath());
-//
-//                            }
-//                        }
+                        for (LocalMedia media : selectList) {
+                            Log.i("图片-----》", media.getPath());
+                            if (media.isCut()) {
+                                uploadAvatar(media.getCutPath());
+                            } else {
+                                uploadAvatar(media.getPath());
+                            }
+                        }
                     }
                     break;
             }
@@ -1564,7 +1606,7 @@ public class MainActivity extends Activity implements JsApi.JsCallback, UMShareL
                             String resultBody = response.body();
                             JsonResponseObject jsonObj = GsonUtil.parseJsonWithGson(resultBody, JsonResponseObject.class);
                             if (jsonObj != null && jsonObj.getMeta() != null) {
-                                if ("200".equals(jsonObj.getMeta().getCode())) {
+                                if ("200".equals(jsonObj.getMeta().getCode()+"")) {
                                     String resultData = jsonObj.getData().getImgpath();
                                     if (!TextUtils.isEmpty(resultData)) {
                                         dWebView.callHandler("addImgCallback", new Object[]{resultData});
